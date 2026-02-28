@@ -274,9 +274,35 @@
 
     /* ── UTILITIES ── */
     input[type="text"] { -webkit-appearance: none; appearance: none; }
+
+    /* ── LOCK SCREEN ── */
+    #lock-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 9999;
+      text-align: center;
+      padding: 32px;
+    }
+    #lock-screen.active { display: flex; }
+    #lock-screen .lock-icon { font-size: 56px; }
+    #lock-screen h2 { font-size: 20px; color: var(--text); }
+    #lock-screen p { font-size: 14px; color: var(--text-dim); max-width: 280px; }
   </style>
 </head>
 <body>
+
+  <!-- LOCK SCREEN (shown when hex key is missing/wrong) -->
+  <div id="lock-screen" class="active">
+    <div class="lock-icon">🔒</div>
+    <h2>Access denied</h2>
+    <p>Invalid or missing access key. Use the private link you were given.</p>
+  </div>
 
   <!-- 1. SECRET WORD -->
   <div class="section">
@@ -332,6 +358,16 @@
   </div>
 
   <script>
+    // ── HEX KEY GATE ───────────────────────────────────────────
+    const ACCESS_KEY = '779f35f0df89751d96f81f3099db4841';
+    (function checkAccess() {
+      const key = window.location.hash.replace(/^#/, '');
+      if (key === ACCESS_KEY) {
+        document.getElementById('lock-screen').classList.remove('active');
+      }
+      // else: lock screen stays visible, body content hidden
+    })();
+
     // ── CONSTANTS ──────────────────────────────────────────────
     const ALLOWED = /[^A-ZÆØÅ]/g;
 
