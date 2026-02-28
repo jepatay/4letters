@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Word Duel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #4caf50;
+      --green-dark: #388e3c;
+      --yellow: #ffc107;
+      --yellow-dark: #f9a825;
+      --bg: #121212;
+      --surface: #1e1e1e;
+      --surface2: #2a2a2a;
+      --border: #3a3a3a;
+      --text: #e8e8e8;
+      --text-dim: #888;
+      --accent: #5c9eff;
+      --radius: 8px;
+      --font: system-ui, -apple-system, sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding: 0;
+    }
+
+    /* ── SECTIONS ── */
+    .section {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    /* ── TOP: SECRET WORD ── */
+    #secret-section {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    #secret-section .section-label {
+      width: 100%;
+      margin-bottom: 0;
+    }
+
+    #secret-label-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    #secret-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 8px 12px;
+      text-transform: uppercase;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #secret-input:focus { border-color: var(--accent); }
+
+    #restart-btn {
+      flex-shrink: 0;
+      background: #3a1a1a;
+      border: 1px solid #7a2a2a;
+      color: #f87171;
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    #restart-btn:active { background: #5a2020; }
+
+    /* ── GUESS ENTRY ── */
+    #guess-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #guess-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 8px 10px;
+      text-transform: uppercase;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    #guess-input:focus { border-color: var(--accent); }
+
+    .counter-btn {
+      flex-shrink: 0;
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 20px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: filter 0.1s, transform 0.1s;
+      user-select: none;
+    }
+
+    .counter-btn:active { transform: scale(0.93); filter: brightness(1.2); }
+
+    #green-btn { background: var(--green); color: #fff; }
+    #yellow-btn { background: var(--yellow); color: #222; }
+
+    #enter-btn {
+      flex-shrink: 0;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: var(--radius);
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      height: 48px;
+      transition: filter 0.1s, transform 0.1s;
+    }
+
+    #enter-btn:active { transform: scale(0.95); filter: brightness(0.85); }
+
+    /* ── DEDUCTION SLOTS ── */
+    #deduction-section .section-label { margin-bottom: 10px; }
+
+    #deduction-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .deduct-slot {
+      width: 58px;
+      height: 58px;
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-align: center;
+      text-transform: uppercase;
+      outline: none;
+      transition: border-color 0.15s;
+      caret-color: var(--accent);
+    }
+
+    .deduct-slot:focus { border-color: var(--accent); }
+    .deduct-slot::placeholder { color: var(--border); font-weight: 400; font-size: 18px; }
+
+    /* ── HISTORY ── */
+    #history-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border-bottom: none;
+    }
+
+    #history-section .section-label { flex-shrink: 0; }
+
+    #history-list {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    #history-empty {
+      color: var(--text-dim);
+      font-size: 14px;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    .history-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 4px;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+    .history-word {
+      flex: 1;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: var(--text);
+    }
+
+    .history-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .badge-green {
+      background: var(--green);
+      color: #fff;
+      border-radius: 5px;
+      padding: 3px 8px;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .badge-yellow {
+      background: var(--yellow);
+      color: #222;
+      border-radius: 5px;
+      padding: 3px 8px;
+      min-width: 36px;
+      text-align: center;
+    }
+
+    .badge-icon { font-size: 16px; }
+
+    /* ── UTILITIES ── */
+    input[type="text"] { -webkit-appearance: none; appearance: none; }
+  </style>
+</head>
+<body>
+
+  <!-- 1. SECRET WORD -->
+  <div class="section">
+    <div id="secret-label-row">
+      <span class="section-label">Your secret word</span>
+      <button id="restart-btn" onclick="restart()">⟳ Restart</button>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px;">
+      <input id="secret-input" type="text" maxlength="4" placeholder="_ _ _ _"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterInput(this)" />
+    </div>
+  </div>
+
+  <!-- 2. GUESS ENTRY -->
+  <div class="section">
+    <div class="section-label">Guess entry</div>
+    <div id="guess-row">
+      <input id="guess-input" type="text" maxlength="4" placeholder="_ _ _ _"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterInput(this)" onkeydown="guessKeydown(event)" />
+      <button class="counter-btn" id="green-btn" onclick="cycleCounter('green')" aria-label="Green count">0</button>
+      <button class="counter-btn" id="yellow-btn" onclick="cycleCounter('yellow')" aria-label="Yellow count">0</button>
+      <button id="enter-btn" onclick="submitGuess()">Enter</button>
+    </div>
+  </div>
+
+  <!-- 3. DEDUCTION SLOTS -->
+  <div class="section" id="deduction-section">
+    <div class="section-label">Confirmed positions</div>
+    <div id="deduction-row">
+      <input class="deduct-slot" id="d0" type="text" maxlength="1" placeholder="1"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterDeduct(this, 1)" />
+      <input class="deduct-slot" id="d1" type="text" maxlength="1" placeholder="2"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterDeduct(this, 2)" />
+      <input class="deduct-slot" id="d2" type="text" maxlength="1" placeholder="3"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterDeduct(this, 3)" />
+      <input class="deduct-slot" id="d3" type="text" maxlength="1" placeholder="4"
+             inputmode="text" autocomplete="off" autocorrect="off" spellcheck="false"
+             oninput="filterDeduct(this, 4)" />
+    </div>
+  </div>
+
+  <!-- 4. HISTORY -->
+  <div class="section" id="history-section">
+    <div class="section-label">Guess history</div>
+    <div id="history-list">
+      <div id="history-empty">No guesses yet</div>
+    </div>
+  </div>
+
+  <script>
+    // ── CONSTANTS ──────────────────────────────────────────────
+    const ALLOWED = /[^A-ZÆØÅ]/g;
+
+    // ── STATE ──────────────────────────────────────────────────
+    let greenCount = 0;
+    let yellowCount = 0;
+    let history = [];
+
+    // ── LOAD PERSISTED STATE ───────────────────────────────────
+    (function init() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('wordDuel') || '{}');
+        if (saved.secret) document.getElementById('secret-input').value = saved.secret;
+        if (saved.deduction) {
+          ['d0','d1','d2','d3'].forEach((id, i) => {
+            if (saved.deduction[i]) document.getElementById(id).value = saved.deduction[i];
+          });
+        }
+        if (Array.isArray(saved.history)) {
+          history = saved.history;
+          history.forEach(entry => addHistoryRow(entry, false));
+        }
+      } catch(e) {}
+    })();
+
+    // ── SAVE STATE ─────────────────────────────────────────────
+    function saveState() {
+      try {
+        localStorage.setItem('wordDuel', JSON.stringify({
+          secret: document.getElementById('secret-input').value,
+          deduction: ['d0','d1','d2','d3'].map(id => document.getElementById(id).value),
+          history,
+        }));
+      } catch(e) {}
+    }
+
+    // ── INPUT FILTERING ────────────────────────────────────────
+    // Only allow A-Z, Æ, Ø, Å — auto-uppercase
+    function filterInput(el) {
+      const pos = el.selectionStart;
+      const raw = el.value.toUpperCase().replace(ALLOWED, '');
+      el.value = raw;
+      try { el.setSelectionRange(pos, pos); } catch(e) {}
+      saveState();
+    }
+
+    function filterDeduct(el, nextPos) {
+      const raw = el.value.toUpperCase().replace(ALLOWED, '').slice(-1);
+      el.value = raw;
+      if (raw && nextPos <= 4) {
+        const next = document.getElementById('d' + (nextPos));
+        if (next) { next.focus(); next.select(); }
+      }
+      saveState();
+    }
+
+    // ── COUNTER CYCLING ────────────────────────────────────────
+    function cycleCounter(color) {
+      if (color === 'green') {
+        greenCount = (greenCount + 1) % 5;
+        document.getElementById('green-btn').textContent = greenCount;
+      } else {
+        yellowCount = (yellowCount + 1) % 5;
+        document.getElementById('yellow-btn').textContent = yellowCount;
+      }
+    }
+
+    // ── SUBMIT GUESS ───────────────────────────────────────────
+    function guessKeydown(e) {
+      if (e.key === 'Enter') { e.preventDefault(); submitGuess(); }
+    }
+
+    function submitGuess() {
+      const input = document.getElementById('guess-input');
+      const word = input.value.toUpperCase().replace(ALLOWED, '');
+      if (word.length !== 4) {
+        shakeEl(input);
+        return;
+      }
+      const entry = { word, green: greenCount, yellow: yellowCount };
+      history.unshift(entry);
+      addHistoryRow(entry, true);
+      saveState();
+
+      // Reset
+      input.value = '';
+      greenCount = 0;
+      yellowCount = 0;
+      document.getElementById('green-btn').textContent = '0';
+      document.getElementById('yellow-btn').textContent = '0';
+      input.focus();
+    }
+
+    function addHistoryRow(entry, isNew) {
+      const empty = document.getElementById('history-empty');
+      if (empty) empty.remove();
+
+      const list = document.getElementById('history-list');
+      const row = document.createElement('div');
+      row.className = 'history-row';
+      row.innerHTML =
+        `<span class="history-word">${entry.word}</span>` +
+        `<span class="history-badge"><span class="badge-icon">🟩</span><span class="badge-green">${entry.green}</span></span>` +
+        `<span class="history-badge"><span class="badge-icon">🟨</span><span class="badge-yellow">${entry.yellow}</span></span>`;
+
+      if (isNew) {
+        list.insertBefore(row, list.firstChild);
+      } else {
+        list.appendChild(row);
+      }
+    }
+
+    // ── RESTART ────────────────────────────────────────────────
+    function restart() {
+      if (!confirm('Restart game? All data will be cleared.')) return;
+
+      document.getElementById('secret-input').value = '';
+      document.getElementById('guess-input').value = '';
+      ['d0','d1','d2','d3'].forEach(id => { document.getElementById(id).value = ''; });
+
+      greenCount = 0;
+      yellowCount = 0;
+      document.getElementById('green-btn').textContent = '0';
+      document.getElementById('yellow-btn').textContent = '0';
+
+      history = [];
+      const list = document.getElementById('history-list');
+      list.innerHTML = '<div id="history-empty">No guesses yet</div>';
+
+      try { localStorage.removeItem('wordDuel'); } catch(e) {}
+
+      document.getElementById('secret-input').focus();
+    }
+
+    // ── SHAKE ANIMATION ────────────────────────────────────────
+    function shakeEl(el) {
+      el.style.transition = 'transform 0.05s';
+      const frames = ['-6px','6px','-5px','5px','0px'];
+      let i = 0;
+      const interval = setInterval(() => {
+        el.style.transform = `translateX(${frames[i]})`;
+        i++;
+        if (i >= frames.length) {
+          clearInterval(interval);
+          el.style.transform = '';
+          el.style.transition = '';
+        }
+      }, 60);
+    }
+  </script>
+</body>
+</html>
